@@ -34,7 +34,16 @@ public class DijkstraHeap {
     public void removeMin() {
         //PRE: getSize() != 0
         // removes the highest priority item
+        locations[items[1].node] = -1;
+        if(size == 1){
+            size = 0;
+            items[1] = null;
+            return;
+        }
         items[1] = items[size];
+        items[size] = null;
+        locations[items[1].node] = 1;
+        size--;
         int loc = 1;
         while (loc * 2 <= size) {
             int left = loc*2, right = loc*2+1;
@@ -43,6 +52,9 @@ public class DijkstraHeap {
                 items[0] = items[loc];
                 items[loc] = items[left];
                 items[left] = items[0];
+                // Swap the locations!
+                locations[items[loc].node] = loc;
+                locations[items[left].node] = left;
 
                 // Set loc to the left child and continue
                 loc = left;
@@ -52,6 +64,9 @@ public class DijkstraHeap {
                 items[0] = items[loc];
                 items[loc] = items[right];
                 items[right] = items[0];
+                // Swap the locations!
+                locations[items[loc].node] = loc;
+                locations[items[right].node] = right;
 
                 // Set loc to the right child and continue
                 loc = right;
@@ -78,14 +93,14 @@ public class DijkstraHeap {
 
     public void insert(int n, int d) {
         //PRE !full() and !inserted(n)
-        int loc = ++size;
+        size++;
+        int loc = size;
+        locations[n] = loc;
         items[loc] = new Item(n, d);
-        System.out.println("Inserting item into the heap at: " + loc);
         heapify(loc);
     }
 
     private void heapify(int loc) {
-        System.out.print("Heapify from: " + loc);
         while (loc > 1) {
             int parent = loc / 2;
             if (items[parent].compareTo(items[loc]) < 0) {
@@ -93,10 +108,14 @@ public class DijkstraHeap {
                 items[0] = items[parent];
                 items[parent] = items[loc];
                 items[loc] = items[0];
+
+                // Swap the locations!
+                locations[items[loc].node] = loc;
+                locations[items[parent].node] = parent;
+
                 loc = parent;
             } else break;
         }
-        System.out.println(" to: " + loc);
     }
 
     public void decreaseKey(int n, int d) {

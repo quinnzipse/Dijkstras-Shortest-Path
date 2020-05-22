@@ -63,10 +63,71 @@ public class Dijkstra {
 
     public void printRoutes(int j){
         // Find and print the best routes from j to all other nodes in the graph
+        // Init a place to store distances
         DijkstraHeap p = new DijkstraHeap(g.length);
+
+        // Start off by marking the origin node with distance 0.
+        g[j].distance = 0;
+        p.insert(j, 0);
+        // repeat until the distance to all nodes is known
+        while(p.getSize() != 0){
+            // Choose a node that has the smallest distance and isn't known.
+            Vertex node = g[p.getMinNode()];
+            node.distance = p.getMinDistance();
+            node.known = true;
+            p.removeMin();
+
+            // for each node adjacent to the current node...
+            var edge = node.edges1;
+            while(edge != null){
+                // vertex1 should always be the same, use vertex2 to find the node it connects to.
+                var adjNode = g[edge.vertex2];
+                int weight = node.distance + edge.weight;
+                if(weight < adjNode.distance){
+                    if(adjNode.distance == Integer.MAX_VALUE) p.insert(edge.vertex2, weight);
+                    else if(p.inserted(edge.vertex1)) p.decreaseKey(edge.vertex2, weight);
+                    adjNode.distance = weight;
+                    adjNode.previous = edge.vertex1;
+                }
+                edge = edge.next1;
+            }
+            edge = node.edges2;
+            while(edge != null){
+                // vertex2 should always be the same, use vertex1 to find the node it connects to.
+                var adjNode = g[edge.vertex1];
+                int weight = node.distance + edge.weight;
+                if(weight < adjNode.distance){
+                    if(adjNode.distance == Integer.MAX_VALUE) p.insert(edge.vertex1, weight);
+                    else if(p.inserted(edge.vertex1)) p.decreaseKey(edge.vertex1, weight);
+                    adjNode.distance = weight;
+                    adjNode.previous = edge.vertex2;
+                }
+                edge = edge.next2;
+            }
+        }
+
+        // Print time
+        System.out.print("Best paths from node " + j + " to: ");
+        for(int i=0; i<g.length; i++){
+            var vertex = g[i];
+            Stack<Integer> stack = new Stack<>();
+            int distance = 0;
+            while(vertex.previous != -1) {
+                stack.push(vertex.previous);
+                distance += vertex.distance;
+                vertex = g[vertex.previous];
+            }
+            if(stack.isEmpty()) continue;
+            System.out.print("\nNode " + i + ": ");
+            while(!stack.isEmpty()){
+                System.out.print( stack.pop() + ", " );
+            }
+            System.out.print(i + "  |  distance: " + distance);
+        }
+
     }
 
-    public static void main(String args[]) throws IOException{
+    public static void main(String[] args) throws IOException{
         BufferedReader b = new BufferedReader(new FileReader(args[0]));
         String line = b.readLine();
         int numNodes = Integer.parseInt(line);
